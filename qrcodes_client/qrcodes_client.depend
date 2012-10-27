@@ -1,0 +1,11 @@
+# depslib dependency file v1.0
+1351372818 source:/home/cs3516/Desktop/qrcodes_client/main.cpp
+	<iostream>
+	<stdio.h>
+	<string.h>
+	<sys/types.h>
+	<sys/socket.h>
+	<netdb.h>
+	<arpa/inet.h>
+	<netinet/in.h>
+
