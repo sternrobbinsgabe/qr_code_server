@@ -41,7 +41,15 @@ int main()
     //if it recieves one, then convert string to ALL CAPS and send it back to the client
     //if it recieves an escape, close the connection
 
-    int sockfd, new_fd;
+    /*
+        NOTES:
+
+
+
+    */
+
+
+    int sockfd, new_fd, numbytes;
     struct addrinfo hints, *serverinfo, *p;
     struct sockaddr_storage their_addr;
     socklen_t sin_size;
@@ -50,6 +58,7 @@ int main()
     char s[INET6_ADDRSTRLEN];
     int rv;
     char buf[128];
+    char client_buf[128];
 
     memset(&hints, 0, sizeof hints); //set memory
     hints.ai_family=AF_UNSPEC; //do not specify family just in case
@@ -63,30 +72,36 @@ int main()
     freeaddrinfo(serverinfo);
 
     listen(sockfd,1); //listens to socket
-
+    cout<<"Listening..."<<endl;
     while(1){
         sin_size=sizeof their_addr;
         new_fd=accept(sockfd,(struct sockaddr*)&their_addr,&sin_size);
 
+        cout<<"got "<<new_fd<<endl;
         //if we dont have a connection, keep waiting
         if(new_fd==-1){
             continue;
         }
-        //cin to the buffer that we will send
         while(1){
 
-            cout << "Type something" << endl;
-            cin>>buf;
+            numbytes=recv(new_fd,client_buf,128,0);
+            //cout<<"got "<<numbytes<<" bytes"<<endl;
 
-            inet_ntop(their_addr.ss_family,get_in_addr((struct sockaddr*)&their_addr),s,sizeof s);
-            cout<< "got a connection from: " << s << endl;
+            if(numbytes>1){
+                cout << "Got a message!" << endl;
+                cout << "Type response to: "<< client_buf << endl;
 
-        //close(sockfd);
+                //cin to the buffer that we will send
+                cin>>buf;
+
+                inet_ntop(their_addr.ss_family,get_in_addr((struct sockaddr*)&their_addr),s,sizeof s);
+                cout<< "got a connection from: " << s << endl;
+
+                //close(sockfd);
                 send(new_fd,buf,128,0);
-        }
+            }
         //close(new_fd);
+        }
     }
-
     return 0;
 }
-

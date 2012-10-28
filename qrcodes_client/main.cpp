@@ -35,9 +35,12 @@ int main()
     //connect to server on 12345
     //listen for messages from the server
     //then print them
-    int sockfd, numbytes;
+    int sockfd, numbytes, new_fd;
     char buf[128];
     struct addrinfo hints, *serverinfo, *p;
+    struct their_addr;
+        socklen_t sin_size;
+
     int rv;
     char s[INET6_ADDRSTRLEN];
 
@@ -46,7 +49,7 @@ int main()
     hints.ai_socktype=SOCK_STREAM;
 
     //connection setting
-    rv=getaddrinfo("cs3516machine","12345",&hints,&serverinfo);
+    rv=getaddrinfo("127.0.0.1","12345",&hints,&serverinfo);
 
     //creation of socket
     sockfd=socket(serverinfo->ai_family,serverinfo->ai_socktype,serverinfo->ai_protocol);
@@ -55,14 +58,37 @@ int main()
     inet_ntop(serverinfo->ai_family,get_in_addr((struct sockaddr*)serverinfo->ai_addr),s,sizeof s);
     cout << "connecting to: "<< s << endl;
 
+    bool b_msg_sent = false;
+    //msg buffer
+    char str_msg_buf[128];
+
+
     while(1){
-        numbytes=recv(sockfd,buf,127,0);
-        //If the number of bytes received is more than 1
-        //then the message was gotten
-        if(numbytes>1){
-            buf[numbytes]='\0';
-            cout<< "Recieved " <<numbytes<< " bytes"<< endl;
-            cout << "Recieved "<< buf << endl;
+
+        if(!b_msg_sent){
+            cout<<"Send a message to server"<<endl;
+            cin>>str_msg_buf;
+            //send message
+            cout<<"Attempting to send message: "<<str_msg_buf<<endl;
+            cout<<"Sending to "<< s <<endl;
+            int foo = send(sockfd,str_msg_buf,128,0);
+            cout<<"sent bits"<<foo<<endl;
+
+            b_msg_sent = true;
+            cout<<"Awaiting response..."<<endl;
+        }
+        else{
+         numbytes=recv(sockfd,buf,128,0);
+
+            if(numbytes>1){
+                    //If the number of bytes received is more than 1
+                    //then the message was gotten
+
+                buf[numbytes]='\0';
+                cout<< "Recieved " <<numbytes<< " bytes"<< endl;
+                cout << "Recieved "<< buf << endl;
+                b_msg_sent = false;
+            }
         }
     }
 
