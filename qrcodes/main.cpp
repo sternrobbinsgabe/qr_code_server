@@ -1,5 +1,13 @@
 //THIS IS THE SERVER
 
+
+/**
+ @author Gabriel Stern-Robbins, Lukasz Zawada
+ @copyright 10/27/2012 WPI CS3516 B12
+ @comment: This is the client for assignment 1.
+
+**/
+
 #include <iostream>
 #include <stdio.h>
 #include <string.h>
@@ -43,10 +51,10 @@ int main()
     int rv;
     char buf[128];
 
-    memset(&hints, 0, sizeof hints);
-    hints.ai_family=AF_UNSPEC;
-    hints.ai_socktype=SOCK_STREAM;
-    hints.ai_flags=AI_PASSIVE;
+    memset(&hints, 0, sizeof hints); //set memory
+    hints.ai_family=AF_UNSPEC; //do not specify family just in case
+    hints.ai_socktype=SOCK_STREAM; //stream
+    hints.ai_flags=AI_PASSIVE; // Can accept connections
 
     getaddrinfo(NULL,"12345",&hints,&serverinfo);
     sockfd=socket(serverinfo->ai_family,serverinfo->ai_socktype,serverinfo->ai_protocol);
@@ -54,7 +62,7 @@ int main()
 
     freeaddrinfo(serverinfo);
 
-    listen(sockfd,1);
+    listen(sockfd,1); //listens to socket
 
     while(1){
         sin_size=sizeof their_addr;
@@ -67,14 +75,14 @@ int main()
         //cin to the buffer that we will send
         while(1){
 
-        cout << "Type something" << endl;
-        cin>>buf;
+            cout << "Type something" << endl;
+            cin>>buf;
 
-        inet_ntop(their_addr.ss_family,get_in_addr((struct sockaddr*)&their_addr),s,sizeof s);
-        cout<< "got a connection from: " << s << endl;
+            inet_ntop(their_addr.ss_family,get_in_addr((struct sockaddr*)&their_addr),s,sizeof s);
+            cout<< "got a connection from: " << s << endl;
 
         //close(sockfd);
-                    send(new_fd,buf,128,0);
+                send(new_fd,buf,128,0);
         }
         //close(new_fd);
     }

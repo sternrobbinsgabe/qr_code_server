@@ -1,4 +1,10 @@
 //THIS IS THE CLIENT
+/**
+ @author Gabriel Stern-Robbins, Lukasz Zawada
+ @copyright 10/27/2012 WPI CS3516 B12
+ @comment: This is the client for assignment 1.
+
+**/
 
 #include <iostream>
 #include <stdio.h>
@@ -28,7 +34,7 @@ int main()
 {
     //connect to server on 12345
     //listen for messages from the server
-    //then print them yay
+    //then print them
     int sockfd, numbytes;
     char buf[128];
     struct addrinfo hints, *serverinfo, *p;
@@ -39,8 +45,10 @@ int main()
     hints.ai_family=AF_UNSPEC;
     hints.ai_socktype=SOCK_STREAM;
 
+    //connection setting
     rv=getaddrinfo("cs3516machine","12345",&hints,&serverinfo);
 
+    //creation of socket
     sockfd=socket(serverinfo->ai_family,serverinfo->ai_socktype,serverinfo->ai_protocol);
     connect(sockfd,serverinfo->ai_addr,serverinfo->ai_addrlen);
 
@@ -49,12 +57,15 @@ int main()
 
     while(1){
         numbytes=recv(sockfd,buf,127,0);
+        //If the number of bytes received is more than 1
+        //then the message was gotten
         if(numbytes>1){
             buf[numbytes]='\0';
             cout<< "Recieved " <<numbytes<< " bytes"<< endl;
             cout << "Recieved "<< buf << endl;
         }
     }
+
 
     return 0;
 }
