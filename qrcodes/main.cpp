@@ -43,11 +43,40 @@ int main()
 
     /*
         NOTES:
-
-
-
+            Server messages:
+                <32 bit unsigned integer representing return code>
+                <32 bit unsigned integer representing URL character array length>
+                <character array of size indicated>
+            return codes:
+                0 - Success, URL is being returned as specified below
+                1 - Failure, something went wrong or no URL is being returned.
+                2 - Timeout, connection closed.
+                3 - Rate Limit Exceeded. An error mesage about the rate limit
+                    being exceeded is set in the character array
     */
 
+    /*
+        Use ZXing library for generating and decoding QR codes.
+        use jar as a decoder for QR codes.
+        Invoke the decoder by typing "java -cp javase.jar:core.jar com/google/zxing.client...
+        in the dir where the files are decompressed.
+        In server program, you will invoce this utility using system calls
+            such as system or exec
+        Site any tutorial used.
+
+    */
+    /* Roadmap:
+    1 ) Create a single threaded server [check]
+                that accepts text froma  client [check]
+                in a file [ ]
+                displays the text [check]
+                and disconnects the client [ ]
+    2) Add support in the server for decoding QR codes [ ]
+    3 ) Add support for accepting binary transmissions (change from step 1?)
+    4) Support for concurrent clients
+            threaded or forked [  ]
+    5) Add error checking and logging func. [  ]
+    6) Security features (?) [  ]
 
     int sockfd, new_fd, numbytes;
     struct addrinfo hints, *serverinfo, *p;
