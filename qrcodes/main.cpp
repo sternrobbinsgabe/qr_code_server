@@ -33,6 +33,34 @@ void* get_in_addr(struct sockaddr* sa){
     return &(((struct sockaddr_in6*)sa)->sin6_addr);
 }
 
+//returns -1 on failure, bytesSent on success
+int sendInChunks(int sockfd, char *buffer, int bytesLeft)
+{
+    int bytesSent = 0;        // how many bytes we've sent
+    int bytesSentSoFar;
+
+    while(bytesLeft > 0) {
+                            //socket, buffer iterator,  bytes left, flags
+        bytesSentSoFar = send(sockfd, buffer+bytesSent, bytesLeft, 0);
+        if (bytesSentSoFar == -1 ){
+            cout<<"ERROR: -1 bytes sent."<<endl;
+            break;
+        }
+        bytesSent += bytesSentSoFar;
+        bytesLeft -= bytesSentSoFar;
+    }
+
+    if (bytesSentSoFar == -1 ){
+        cout<<"ERROR: -1 bytes were sent."<<endl;
+        return -1;
+    }
+    else {
+        return bytesSent;
+    }
+}
+
+
+
 int main()
 {
     //to do
@@ -78,6 +106,7 @@ int main()
     5) Add error checking and logging func. [  ]
     6) Security features (?) [  ]
 
+    */
     int sockfd, new_fd, numbytes;
     struct addrinfo hints, *serverinfo, *p;
     struct sockaddr_storage their_addr;
