@@ -63,77 +63,108 @@ int sendInChunks(int sockfd, char *buffer, int bytesLeft)
     }
 }
 
+//function that gets the url from a qr file
+char* qr2url(char* fileName){
+    char temp[256]={0};
+    strcpy(temp,"java -cp javase.jar:core.jar com.google.zxing.client.j2se.CommandLineRunner ");
+    strcat(temp,fileName);
+    FILE* fp=popen(temp,"r");
+    char* line=NULL;
+    size_t len=0;
+    ssize_t read;
+
+    while((read=getline(&line,&len,fp))!=-1){
+        //cout << line;
+        if(strcmp(line,"Parsed result:\n")==0){
+            getline(&line,&len,fp);
+            return line;
+            break;
+        }
+    }
+    pclose(fp);
+    return NULL;
+}
 
 
-int main()
-{
-    //to do
-    //create a server on port 12345
-    //listen for incomming messages
-    //if it recieves one, then convert string to ALL CAPS and send it back to the client
-    //if it recieves an escape, close the connection
+int sockfd, new_fd, numbytes;
 
-    /*
-        NOTES:
-            Server messages:
-                <32 bit unsigned integer representing return code>
-                <32 bit unsigned integer representing URL character array length>
-                <character array of size indicated>
-            return codes:
-                0 - Success, URL is being returned as specified below
-                1 - Failure, something went wrong or no URL is being returned.
-                2 - Timeout, connection closed.
-                3 - Rate Limit Exceeded. An error mesage about the rate limit
-                    being exceeded is set in the character array
-    */
+void init(char* p){
 
-    /*
-        Use ZXing library for generating and decoding QR codes.
-        use jar as a decoder for QR codes.
-        Invoke the decoder by typing "java -cp javase.jar:core.jar com/google/zxing.client...
-        in the dir where the files are decompressed.
-        In server program, you will invoce this utility using system calls
-            such as system or exec
-        Site any tutorial used.
+    struct addrinfo hints, *serverinfo;
 
-    */
-    /* Roadmap:
-    1 ) Create a single threaded server [check]
-                that accepts text froma  client [check]
-                in a file [ ]
-                displays the text [check]
-                and disconnects the client [ ]
-    2) Add support in the server for decoding QR codes [ ]
-    3 ) Add support for accepting binary transmissions (change from step 1?)
-    4) Support for concurrent clients
-            threaded or forked [  ]
-    5) Add error checking and logging func. [  ]
-    6) Security features (?) [  ]
-
-    */
-    int sockfd, new_fd, numbytes;
-    struct addrinfo hints, *serverinfo, *p;
-    struct sockaddr_storage their_addr;
-    socklen_t sin_size;
-    //struct sigaction sa;
-    int yes=1;
-    char s[INET6_ADDRSTRLEN];
-    int rv;
-    char buf[128];
-    char client_buf[128];
-
-    memset(&hints, 0, sizeof hints); //set memory
+    memset(&hints, 0, sizeof hints); //set all the members
     hints.ai_family=AF_UNSPEC; //do not specify family just in case
     hints.ai_socktype=SOCK_STREAM; //stream
     hints.ai_flags=AI_PASSIVE; // Can accept connections
 
-    getaddrinfo(NULL,"12345",&hints,&serverinfo);
+    getaddrinfo(NULL,p,&hints,&serverinfo);
     sockfd=socket(serverinfo->ai_family,serverinfo->ai_socktype,serverinfo->ai_protocol);
     bind(sockfd,serverinfo->ai_addr,serverinfo->ai_addrlen);
 
     freeaddrinfo(serverinfo);
 
     listen(sockfd,1); //listens to socket
+}
+
+int main(int argc, char** argv)
+{
+
+
+    //config variables that hold the commandline args
+    //-p 12345 -q 6 -r 30 -m 5 -t 60
+    char* port="2012";//p
+    int rateReq=3;//q
+    int rateTime=60;//r
+    int maxUsers=3;//m
+    int timeOut=80;//t
+
+    cout<< port << endl;
+    cout << rateReq << endl;
+    cout << rateTime << endl;
+    cout << maxUsers << endl;
+    cout << timeOut << endl;
+
+    //do getopt funtime
+    int c;
+    while((c=getopt(argc,argv,"p:q:r:m:t:"))!=-1){
+        switch(c){
+        case 'p':
+            port=optarg;
+            break;
+        case 'q':
+            rateReq=atoi(optarg);
+            break;
+        case 'r':
+            rateTime=atoi(optarg);
+            break;
+        case 'm':
+            maxUsers=atoi(optarg);
+            break;
+        case 't':
+            timeOut=atoi(optarg);
+            break;
+        case '?':
+            cout<< "you id something wrong" << endl;
+            break;
+        }
+
+    }
+
+    cout << port << endl;
+    cout << rateReq << endl;
+    cout << rateTime << endl;
+    cout << maxUsers << endl;
+    cout << timeOut << endl;
+
+    //setup the internets
+    init(port);
+
+    socklen_t sin_size;
+    struct sockaddr_storage their_addr;
+    char s[INET6_ADDRSTRLEN];
+    char buf[128];
+    char client_buf[128];
+
     cout<<"Listening..."<<endl;
     while(1){
         sin_size=sizeof their_addr;

@@ -21,3 +21,15 @@
 	<netinet/in.h>
 	<stdlib.h>
 
+1351960362 source:/home/cs3516/Desktop/qr_tomerge/qrcodes_client/main.cpp
+	<iostream>
+	<sys/stat.h>
+	<stdio.h>
+	<string.h>
+	<sys/types.h>
+	<sys/socket.h>
+	<netdb.h>
+	<arpa/inet.h>
+	<netinet/in.h>
+	<stdlib.h>
+
