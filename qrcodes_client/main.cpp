@@ -7,6 +7,7 @@
 **/
 
 #include <iostream>
+#include <sys/stat.h>
 #include <stdio.h>
 #include <string.h>
 #include <sys/types.h>
@@ -14,9 +15,81 @@
 #include <netdb.h>
 #include <arpa/inet.h>
 #include <netinet/in.h>
+#include <stdlib.h>
 
 using namespace std;
 
+
+//packet structure
+struct Packet
+{
+    public:
+        long size; //size of packet
+        void* data;  //payload
+
+}; // end of packet structure
+
+int getPacketSize( Packet* packet)
+{
+    return sizeof (packet->size) + sizeof (packet->data);
+}
+
+Packet createPacket(char* filePath){
+
+    //Packet creation:
+
+    Packet packet = {0};
+
+    FILE *file;
+    file = fopen(filePath, "r");
+    cout<<"FILEPATH: "<<filePath<<endl;
+
+    //packet.size = getFileSize (file);
+    struct stat fStat;
+    stat (filePath, &fStat);
+    packet.size = fStat.st_size;
+
+    cout<<"Size of packet: "<<packet.size<<endl;
+    packet.data = malloc( packet.size);
+    if ( packet.data == 0)
+        cout<<"ERROR: FILE EMPTY"<<endl;
+
+    cout<<"Size of packet data: "<<packet.data<<endl;
+    int n = fread(packet.data, packet.size, 1, file);
+    cout<<"Whatever n is: "<<n<<endl;
+    return packet;
+}
+
+//returns -1 on failure, bytesSent on success
+int sendInChunks(int sockfd, char *buffer, int bytesLeft)
+{
+    int bytesSent = 0;        // how many bytes we've sent
+    int bytesSentSoFar = 0;
+
+    cout<<"socket/bytesLeft "<< sockfd << " / " << bytesLeft << endl;
+
+    while(bytesLeft > 0) {
+                            //socket, buffer iterator,  bytes left, flags
+        bytesSentSoFar = send(sockfd, buffer+bytesSent, bytesLeft, 0);
+        if (bytesSentSoFar == -1 ){
+            cout<<"ERROR 001: -1 bytes sent."<<endl;
+            break;
+        }
+        bytesSent += bytesSentSoFar;
+        bytesLeft -= bytesSentSoFar;
+    }
+
+    if (bytesSentSoFar == -1 ){
+        cout<<"ERROR 002: -1 bytes were sent."<<endl;
+        return -1;
+    }
+    else {
+        return bytesSent;
+    }
+}
+
+
+///////////// END OF PACKET
 
 //for the checkpoint, the client will cin to a string and then the server will print that string
 
@@ -61,18 +134,29 @@ int main()
     bool b_msg_sent = false;
     //msg buffer
     char str_msg_buf[128];
-
+    char filePath[256];
 
     while(1){
 
         if(!b_msg_sent){
-            cout<<"Send a message to server"<<endl;
-            cin>>str_msg_buf;
-            //send message
-            cout<<"Attempting to send message: "<<str_msg_buf<<endl;
-            cout<<"Sending to "<< s <<endl;
-            int foo = send(sockfd,str_msg_buf,128,0);
+            cout<<"Give a file path"<<endl;
+            cin>>filePath;
+
+            cout<<filePath<<endl;
+
+
+            Packet p = createPacket(filePath);
+
+            int foo = sendInChunks( sockfd, (char *)p.data, p.size);
             cout<<"sent bits"<<foo<<endl;
+            //send(sockfd,filePath,128,0);
+            free(p.data);
+            //send message
+            //cout<<"Attempting to send message: "<<str_msg_buf<<endl;
+            cout<<"Sending to "<< s <<endl;
+
+            //int foo = send(sockfd,str_msg_buf,128,0);
+            //cout<<"sent bits"<<foo<<endl;
 
             b_msg_sent = true;
             cout<<"Awaiting response..."<<endl;

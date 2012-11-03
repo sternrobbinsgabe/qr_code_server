@@ -9,8 +9,9 @@
 	<arpa/inet.h>
 	<netinet/in.h>
 
-1351452700 source:/home/cs3516/Desktop/qr_server/qrcodes_client/main.cpp
+1351908651 source:/home/cs3516/Desktop/qr_server/qrcodes_client/main.cpp
 	<iostream>
+	<sys/stat.h>
 	<stdio.h>
 	<string.h>
 	<sys/types.h>
@@ -18,4 +19,5 @@
 	<netdb.h>
 	<arpa/inet.h>
 	<netinet/in.h>
+	<stdlib.h>
 

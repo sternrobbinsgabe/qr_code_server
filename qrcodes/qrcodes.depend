@@ -12,7 +12,7 @@
 	<signal.h>
 	<errno.h>
 
-1351448990 source:/home/cs3516/Desktop/qr_server/qrcodes/main.cpp
+1351907879 source:/home/cs3516/Desktop/qr_server/qrcodes/main.cpp
 	<iostream>
 	<stdio.h>
 	<string.h>
@@ -24,4 +24,7 @@
 	<sys/wait.h>
 	<signal.h>
 	<errno.h>
+	<stdlib.h>
+	<sys/stat.h>
+	<sys/types.h>
 

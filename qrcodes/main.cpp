@@ -19,6 +19,10 @@
 #include <sys/wait.h>
 #include <signal.h>
 #include <errno.h>
+#include <stdlib.h>
+
+#include <sys/stat.h>
+#include <sys/types.h>
 
 using namespace std;
 //recieve a string from the client and then print it
@@ -140,15 +144,26 @@ int main()
         if(new_fd==-1){
             continue;
         }
+
+        //Create a new file for output
+        //int f = open("output.txt", O_RDWR | O_CREAT, S_IRUSR | S_IRGRP | S_IROTH);
+//        FILE *newFile ("output.txt", "w");
+        FILE *filet = fopen("client_qr.png", "w+");
+
         while(1){
 
-            numbytes=recv(new_fd,client_buf,128,0);
+            numbytes=recv(new_fd,client_buf,2000,0);
             //cout<<"got "<<numbytes<<" bytes"<<endl;
 
             if(numbytes>1){
                 cout << "Got a message!" << endl;
                 cout << "Type response to: "<< client_buf << endl;
 
+
+                //fwrite(client_buf, sizeof(client_buf), 1, filet);
+                for ( int i = 0; i < 1589; i++){
+                    fputc(client_buf[i],filet);
+                }
                 //cin to the buffer that we will send
                 cin>>buf;
 
