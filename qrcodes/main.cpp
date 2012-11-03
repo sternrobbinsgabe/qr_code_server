@@ -197,20 +197,33 @@ int main(int argc, char** argv)
                 for ( int i = 0; i < 1589; i++){
                     fputc(client_buf[i],filet);
                 }
-	    }
+            }
             break;
-	}
-        //QR DECODING HERE
-	cout<<"Finished sending packet."<<endl;
-        char new_buf[24] = "Got QR Code; Good Bye \n";
-
-        for(int i = 0; i < 24; i++){
-            buf[i] = new_buf[i];
         }
+        cout<<"Decoding QR"<<endl;
+        //QR DECODING HERE
+        char *new_buf;
+        new_buf=qr2url("client_qr.png");
+        //cout<<new_buf<<endl;
+        /*for(int i = 0; i < 128; i++){
+            if(buf[i] > -1){
+                buf[i] = new_buf[i];
+                cout<<buf[i];
+            }
+        }*/
+        cout<<"Finished translating to char array"<<endl;
 
+        cout<<"test4"<<endl;
+        cout<<qr2url("qr.png");
+        cout<<"test3"<<endl;
 
         inet_ntop(their_addr.ss_family,get_in_addr((struct sockaddr*)&their_addr),s,sizeof s);
-        send(new_fd,buf,128,0);
+        cout<<"test1"<<endl;
+        cout<<qr2url("qr.png");
+        cout<<"test2"<<endl;
+
+        send(new_fd,qr2url("qr.png"),128,0);
+        cout<<"Finished sending packet."<<endl;
 
         close(new_fd);
         }
