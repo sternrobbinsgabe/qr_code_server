@@ -16,6 +16,7 @@
 #include <arpa/inet.h>
 #include <netinet/in.h>
 #include <stdlib.h>
+#include <limits.h>
 
 using namespace std;
 
@@ -29,50 +30,66 @@ struct Packet
 
 }; // end of packet structure
 
+/* Returns the size of the packet
+    @param Packet pointer to a packet to be sent
+    @return int size
+*/
 int getPacketSize( Packet* packet)
 {
     return sizeof (packet->size) + sizeof (packet->data);
 }
 
+/*
+    Creates and returns a packet of a file.
+    @param filePath - path to the file
+    @return Packet struct
+*/
 Packet createPacket(char* filePath){
 
     //Packet creation:
-
     Packet packet = {0};
 
     FILE *file;
     file = fopen(filePath, "r");
-    cout<<"FILEPATH: "<<filePath<<endl;
+    cout<<"FILE PATH: "<<filePath<<endl;
 
-    //packet.size = getFileSize (file);
     struct stat fStat;
     stat (filePath, &fStat);
     packet.size = fStat.st_size;
+    if (packet.size > 65536 || packet.size <= 0){
+        cerr<<"File size invalid \n";
+        exit(1);
+    }
 
     cout<<"Size of packet: "<<packet.size<<endl;
     packet.data = malloc( packet.size );
-    if ( packet.data == 0)
-        cout<<"ERROR: FILE EMPTY"<<endl;
-
-    cout<<"Size of packet data: "<<packet.data<<endl;
-    int n = fread(packet.data, packet.size, 1, file);
-    cout<<"Whatever n is: "<<n<<endl;
+    if ( packet.data == 0){
+        cerr<<"ERROR: FILE EMPTY \n"<<endl;
+        exit(1);
+    }
+    fread(packet.data, packet.size, 1, file);
     return packet;
 }
 
-//returns -1 on failure, bytesSent on success
+/*
+    returns -1 on failure, bytes sent on success
+    @param sockfd - int socket
+    @param buffer - point to buffer where the data is stored
+    @bytesLeft - amount of bytes to send
+*/
 int sendInChunks(int sockfd, char *buffer, int bytesLeft)
 {
     int bytesSent = 0;        // how many bytes we've sent
     int bytesSentSoFar = 0;
 
-    cout<<"socket/bytesLeft "<< sockfd << " / " << bytesLeft << endl;
+    cout<<"Bytes Left " << bytesLeft << endl;
 
     while(bytesLeft > 0) {
                             //socket, buffer iterator,  bytes left, flags
         bytesSentSoFar = send(sockfd, buffer+bytesSent, bytesLeft, 0);
         if (bytesSentSoFar == -1 ){
-            cout<<"ERROR 001: -1 bytes sent."<<endl;
+            cerr<<"ERROR: -1 bytes sent. \n"<<endl;
+            exit(1);
             break;
         }
         bytesSent += bytesSentSoFar;
@@ -80,8 +97,8 @@ int sendInChunks(int sockfd, char *buffer, int bytesLeft)
     }
 
     if (bytesSentSoFar == -1 ){
-        cout<<"ERROR 002: -1 bytes were sent."<<endl;
-        return -1;
+        cerr<<"ERROR: -1 bytes were sent. \n"<<endl;
+        exit(1);
     }
     else {
         return bytesSent;
@@ -89,9 +106,8 @@ int sendInChunks(int sockfd, char *buffer, int bytesLeft)
 }
 
 
-///////////// END OF PACKET
+///////////// END OF PACKET PROGRAMMING - LZ
 
-//for the checkpoint, the client will cin to a string and then the server will print that string
 
 //helper function to determine if we are using ipv4 or 6
 void* get_in_addr(struct sockaddr* sa){
@@ -103,26 +119,44 @@ void* get_in_addr(struct sockaddr* sa){
     return &(((struct sockaddr_in6*)sa)->sin6_addr);
 }
 
-int main()
+int main(int argc, char** argv)
 {
-    //connect to server on 12345
-    //listen for messages from the server
-    //then print them
-    int sockfd, numbytes, new_fd;
+    int sockfd, numbytes;
     char buf[256];
-    struct addrinfo hints, *serverinfo, *p;
+    struct addrinfo hints, *serverinfo;
     struct their_addr;
-        socklen_t sin_size;
 
     int rv;
     char s[INET6_ADDRSTRLEN];
 
-    memset(&hints,0,sizeof hints);
+    memset(&hints,0,sizeof hints); //set memory to safe 0
     hints.ai_family=AF_UNSPEC;
     hints.ai_socktype=SOCK_STREAM;
 
+
+    char* port = "2012"; //default port
+    char* IP = "127.0.0.1"; //default IP
+
+    //GETOPT
+    //    p: -> -p  [something]
+    //    i: -> -i [something_else]
+    int c;
+    while((c=getopt(argc,argv,"p:i:"))!=-1){
+        switch(c){
+        case 'p':  //port
+            port=optarg;
+            break;
+        case 'i':
+            IP=optarg;
+            break;
+        case '?':
+            cout<< "you id something wrong" << endl;
+            break;
+        }
+    }
+
     //connection setting
-    rv=getaddrinfo("127.0.0.1","12345",&hints,&serverinfo);
+    rv=getaddrinfo(IP, port,&hints,&serverinfo);
 
     //creation of socket
     sockfd=socket(serverinfo->ai_family,serverinfo->ai_socktype,serverinfo->ai_protocol);
@@ -132,29 +166,26 @@ int main()
     cout << "connecting to: "<< s << endl;
 
     bool b_msg_sent = false;
-    //msg buffer
-    char str_msg_buf[256];
     char filePath[256];
 
     while(1){
 
         if(!b_msg_sent){
-            cout<<"Give a file path"<<endl;
+
+            cout << "Give a file path"<<endl;
             cin>>filePath;
 
             Packet p = createPacket(filePath);
-            cout << "Sending packet"<< endl;
+            cout << "Sending packet "<< endl;
 
             int foo = sendInChunks( sockfd, (char *)p.data, p.size);
-            cout<<"sent bits"<<foo<<endl;
-            //send(sockfd,filePath,128,0);
-            free(p.data);
-            //send message
-            //cout<<"Attempting to send message: "<<str_msg_buf<<endl;
-            cout<<"Sending to "<< s <<endl;
+            cout<<"Sent bytes "<<foo<<endl;
 
-            //int foo = send(sockfd,str_msg_buf,128,0);
-            //cout<<"sent bits"<<foo<<endl;
+            //FREE MEMORY
+            free(p.data);
+
+            //send message
+            cout<<"Sending to "<< s <<endl;
 
             b_msg_sent = true;
             cout<<"Awaiting response..."<<endl;
@@ -173,7 +204,6 @@ int main()
             }
         }
     }
-
 
     return 0;
 }

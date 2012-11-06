@@ -1,0 +1,19 @@
+Log file started for 2012-11-6 17:46:1 
+2012-11-6 17:46:4 Connection from: 127.0.0.1
+2012-11-6 17:46:10 Decoded a qr code with url: http://web.cs.wpi.edu/~cshue/cs3516/
+
+Log file started for 2012-11-6 17:59:38 
+2012-11-6 18:0:5 Connection from: 127.0.0.1
+2012-11-6 18:0:13 Decoded a qr code with url: http://web.cs.wpi.edu/~cshue/cs3516/
+
+Log file started for 2012-11-6 18:3:43 
+2012-11-6 18:3:47 Connection from: 127.0.0.1
+2012-11-6 18:3:53 Decoded a qr code with url: http://web.cs.wpi.edu/~cshue/cs3516/
+
+Log file started for 2012-11-6 18:4:37 
+2012-11-6 18:4:39 Connection from: 127.0.0.1
+2012-11-6 18:4:58 Connection from: 127.0.0.1
+2012-11-6 18:5:7 Decoded a qr code with url: http://web.cs.wpi.edu/~cshue/cs3516/
+
+Log file started for 2012-11-6 18:5:14 
+2012-11-6 18:5:17 Connection from: 127.0.0.1
