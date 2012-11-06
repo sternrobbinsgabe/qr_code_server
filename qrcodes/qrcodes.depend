@@ -28,7 +28,7 @@
 	<sys/stat.h>
 	<sys/types.h>
 
-1351968451 source:/home/cs3516/Desktop/qr_forked_server/qrcodes/main.cpp
+1352161858 source:/home/cs3516/Desktop/qr_forked_server/qrcodes/main.cpp
 	<iostream>
 	<stdio.h>
 	<string.h>
@@ -42,5 +42,4 @@
 	<errno.h>
 	<stdlib.h>
 	<sys/stat.h>
-	<sys/types.h>
 

@@ -1,39 +1,5 @@
 # depslib dependency file v1.0
-1351372818 source:/home/cs3516/Desktop/qrcodes_client/main.cpp
-	<iostream>
-	<stdio.h>
-	<string.h>
-	<sys/types.h>
-	<sys/socket.h>
-	<netdb.h>
-	<arpa/inet.h>
-	<netinet/in.h>
-
-1351908651 source:/home/cs3516/Desktop/qr_server/qrcodes_client/main.cpp
-	<iostream>
-	<sys/stat.h>
-	<stdio.h>
-	<string.h>
-	<sys/types.h>
-	<sys/socket.h>
-	<netdb.h>
-	<arpa/inet.h>
-	<netinet/in.h>
-	<stdlib.h>
-
-1351960362 source:/home/cs3516/Desktop/qr_tomerge/qrcodes_client/main.cpp
-	<iostream>
-	<sys/stat.h>
-	<stdio.h>
-	<string.h>
-	<sys/types.h>
-	<sys/socket.h>
-	<netdb.h>
-	<arpa/inet.h>
-	<netinet/in.h>
-	<stdlib.h>
-
-1351965449 source:/home/cs3516/Desktop/qr_forked_server/qrcodes_client/main.cpp
+1352168894 source:/home/cs3516/Desktop/qr_forked_server/qrcodes_client/main.cpp
 	<iostream>
 	<sys/stat.h>
 	<stdio.h>

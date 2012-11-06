@@ -22,7 +22,6 @@
 #include <stdlib.h>
 
 #include <sys/stat.h>
-#include <sys/types.h>
 
 using namespace std;
 //recieve a string from the client and then print it
@@ -65,24 +64,34 @@ int sendInChunks(int sockfd, char *buffer, int bytesLeft)
 
 //function that gets the url from a qr file
 char* qr2url(char* fileName){
+    //system("top");
     char temp[256]={0};
-    strcpy(temp,"java -cp javase.jar:core.jar com.google.zxing.client.j2se.CommandLineRunner ");
-    strcat(temp,fileName);
-    FILE* fp=popen(temp,"r");
-    char* line=NULL;
-    size_t len=0;
-    ssize_t read;
+    strcpy(temp,"java -cp javase.jar:core.jar com.google.zxing.client.j2se.CommandLineRunner qr.png");
+    //strcat(temp, fileName);
+    //strcat(temp,"\0");
+    //strcat(temp, " 2>out 1>out && echo \"hello\" >> out ");
+    //system(temp);
+    //cout<<"Return val: "<<system("touch /home/cs3516/Desktop/qr_forked_server/qrcodes/bin/Debug/newfile") << endl;
+    //return "foobar\n";
 
-    while((read=getline(&line,&len,fp))!=-1){
+    FILE* fp;
+    fp = popen(temp,"r");
+    char* line= (char*)malloc(1024 * sizeof(char));
+    size_t len=1024;
+
+    while((getline(&line,&len,fp)) > 0){
+        //cout<<"IN WHILE"<<endl;
         //cout << line;
+
         if(strcmp(line,"Parsed result:\n")==0){
             getline(&line,&len,fp);
+            pclose(fp);
             return line;
-            break;
         }
     }
+
     pclose(fp);
-    return NULL;
+    return "you dun goofed\n";
 }
 
 
@@ -90,6 +99,7 @@ int sockfd, new_fd, numbytes;
 
 void init(char* p){
 
+    int yes=1;
     struct addrinfo hints, *serverinfo;
 
     memset(&hints, 0, sizeof hints); //set all the members
@@ -99,6 +109,7 @@ void init(char* p){
 
     getaddrinfo(NULL,p,&hints,&serverinfo);
     sockfd=socket(serverinfo->ai_family,serverinfo->ai_socktype,serverinfo->ai_protocol);
+    setsockopt(sockfd,SOL_SOCKET,SO_REUSEADDR,&yes,sizeof(int));
     bind(sockfd,serverinfo->ai_addr,serverinfo->ai_addrlen);
 
     freeaddrinfo(serverinfo);
@@ -109,7 +120,7 @@ void init(char* p){
 int main(int argc, char** argv)
 {
 
-
+    cout << qr2url("qr.png");
     //config variables that hold the commandline args
     //-p 12345 -q 6 -r 30 -m 5 -t 60
     char* port="2012";//p
@@ -118,11 +129,7 @@ int main(int argc, char** argv)
     int maxUsers=3;//m
     int timeOut=80;//t
 
-    cout<< port << endl;
-    cout << rateReq << endl;
-    cout << rateTime << endl;
-    cout << maxUsers << endl;
-    cout << timeOut << endl;
+    char* dir = get_current_dir_name();
 
     //do getopt funtime
     int c;
@@ -150,21 +157,19 @@ int main(int argc, char** argv)
 
     }
 
-    cout << port << endl;
-    cout << rateReq << endl;
-    cout << rateTime << endl;
-    cout << maxUsers << endl;
-    cout << timeOut << endl;
-
     //setup the internets
     init(port);
+
+    //for the forking
+    int status;
 
     socklen_t sin_size;
     struct sockaddr_storage their_addr;
     char s[INET6_ADDRSTRLEN];
-    char buf[128];
-    char client_buf[128];
+    char buf[65536]={0};
+    char client_buf[65536]={0};
 
+    //cout<<qr2url("qr.png", dir);
     cout<<"Listening..."<<endl;
     while(1){
         sin_size=sizeof their_addr;
@@ -176,72 +181,49 @@ int main(int argc, char** argv)
             continue;
         }
 
-	pid_t pID = fork();
+        pid_t pID = fork();
 
-	if(pID == 0) //child
-	{
-
-       	    cout<<"This is child of pID: "<<pID<<endl;;
+        if(pID == 0){ //child
+            cout<<"This is child of pID: "<<pID<<endl;
             //Create a new file for output
             FILE *filet = fopen("client_qr.png", "w+");
+            while(1){
 
-        while(1){
+                numbytes=recv(new_fd,client_buf,65536,0);
 
-            numbytes=recv(new_fd,client_buf,2000,0);
+                if(numbytes>0){
+                    cout << "Got a message!" << endl;
 
-            if(numbytes>1){
-                cout << "Got a message!" << endl;
-                cout << "Type response to: "<< client_buf << endl;
-
-		//write into the file
-                for ( int i = 0; i < 1589; i++){
-                    fputc(client_buf[i],filet);
+                    //write into the file
+                    for ( int i = 0; i < numbytes; i++){
+                        fputc(client_buf[i],filet);
+                    }
                 }
+                fclose(filet);
+                break;
             }
-            break;
+            cout<<"Decoding QR"<<endl;
+            //QR DECODING HERE
+            inet_ntop(their_addr.ss_family,get_in_addr((struct sockaddr*)&their_addr),s,sizeof s);
+            cout<<qr2url("client_qr.png");
+            send(new_fd,qr2url("client_qr.png"),128,0);
+            remove("client_qr.png");
+            cout<<"Finished sending packet."<<endl;
+            close(new_fd);
+            exit(0);
         }
-        cout<<"Decoding QR"<<endl;
-        //QR DECODING HERE
-        char *new_buf;
-        new_buf=qr2url("client_qr.png");
-        //cout<<new_buf<<endl;
-        /*for(int i = 0; i < 128; i++){
-            if(buf[i] > -1){
-                buf[i] = new_buf[i];
-                cout<<buf[i];
-            }
-        }*/
-        cout<<"Finished translating to char array"<<endl;
-
-        cout<<"test4"<<endl;
-        cout<<qr2url("qr.png");
-        cout<<"test3"<<endl;
-
-        inet_ntop(their_addr.ss_family,get_in_addr((struct sockaddr*)&their_addr),s,sizeof s);
-        cout<<"test1"<<endl;
-        cout<<qr2url("qr.png");
-        cout<<"test2"<<endl;
-
-        send(new_fd,qr2url("qr.png"),128,0);
-        cout<<"Finished sending packet."<<endl;
-
-        close(new_fd);
-        }
-        else if (pID < 0) //fork failed
-        {
+        else if (pID < 0){ //fork failed
             //CODE FROM SITE:
-            //cerr<<"Failed to fork"<<endl;
-            //exit(1);
-            cout<<"Error: Failed to create server child."<<endl;
-
+            cout<<"Failed to fork"<<endl;
+            exit(1);
         }
-        else //parent
-        {
+        else{ //parent
             //if no more than 3 people
             cout<<"This is parent"<<endl;
             new_fd = -1;
-            listen(sockfd,1); //listens to socket
-            continue;
+            //listen(sockfd,1); //listens to socket
+            //wait for child
+            //waitpid(pID,&status,WEXITED);
         }
     }
     return 0;

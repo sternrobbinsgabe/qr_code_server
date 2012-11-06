@@ -50,7 +50,7 @@ Packet createPacket(char* filePath){
     packet.size = fStat.st_size;
 
     cout<<"Size of packet: "<<packet.size<<endl;
-    packet.data = malloc( packet.size);
+    packet.data = malloc( packet.size );
     if ( packet.data == 0)
         cout<<"ERROR: FILE EMPTY"<<endl;
 
@@ -109,7 +109,7 @@ int main()
     //listen for messages from the server
     //then print them
     int sockfd, numbytes, new_fd;
-    char buf[128];
+    char buf[256];
     struct addrinfo hints, *serverinfo, *p;
     struct their_addr;
         socklen_t sin_size;
@@ -133,7 +133,7 @@ int main()
 
     bool b_msg_sent = false;
     //msg buffer
-    char str_msg_buf[128];
+    char str_msg_buf[256];
     char filePath[256];
 
     while(1){
@@ -142,10 +142,8 @@ int main()
             cout<<"Give a file path"<<endl;
             cin>>filePath;
 
-            cout<<filePath<<endl;
-
-
             Packet p = createPacket(filePath);
+            cout << "Sending packet"<< endl;
 
             int foo = sendInChunks( sockfd, (char *)p.data, p.size);
             cout<<"sent bits"<<foo<<endl;
@@ -162,7 +160,7 @@ int main()
             cout<<"Awaiting response..."<<endl;
         }
         else{
-         numbytes=recv(sockfd,buf,128,0);
+         numbytes=recv(sockfd,buf,256,0);
 
             if(numbytes>1){
                     //If the number of bytes received is more than 1
